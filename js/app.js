@@ -778,7 +778,14 @@ async function initAppEvents() {
   document.querySelectorAll(".btn-open-admin").forEach(b => {
     b.addEventListener("click", e => {
       e.preventDefault();
-      if (typeof window.openAdminDashboard === "function") window.openAdminDashboard();
+      // فتح نافذة تسجيل الدخول أو لوحة التحكم مباشرة بمدى آمن
+      if (typeof window.openAdminLoginModal === "function" && typeof window.isAdminLoggedIn === "function" && !window.isAdminLoggedIn()) {
+        window.openAdminLoginModal();
+      } else if (typeof window.openAdminDashboard === "function") {
+        window.openAdminDashboard();
+      } else {
+        console.error("دوال الإدارة غير محملة بعد");
+      }
     });
   });
 
