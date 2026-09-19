@@ -1,26 +1,19 @@
 /**
  * عطورات اترند - ATRAND PERFUMES
  * ملف إدارة المتجر ولوحة التحكم السحابية - Admin & Supabase Storage Manager
- * البريد: omar@trand.com
- * كلمة المرور: trand1234
+ * البريد: admin@atrand.com
+ * كلمة المرور: atrand2026
  */
 
 const ADMIN_CREDENTIALS = {
-  email: "omar@trand.com",
-  password: "trand1234"
+  email: "admin@atrand.com", // تم توحيد البريد ليتوافق مع المدخلات
+  password: "atrand2026"     // كلمة المرور المعتمدة للوحة
 };
 
 const BANNERS_STORAGE_KEY = "atrand_banners_db";
 const SESSION_KEY = "atrand_admin_auth";
+let supabaseAdminClient = window.supabaseClient || null;
 
-// إعدادات اتصال Supabase السحابي
-const SUPABASE_URL = "https://iceianuxbnhnpeupbbrz.supabase.co";
-const SUPABASE_KEY = "sb_publishable_syiACLwvd6tIh7moWlWSdA_OXJ5o5KX";
-
-let supabaseAdminClient = null;
-if (window.supabase) {
-  supabaseAdminClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-}
 
 // الحالة الحالية للإدارة
 let currentEditId = null;
@@ -197,11 +190,19 @@ async function openAdminDashboard() {
   }
   const dashboard = document.getElementById("adminDashboardView");
   if (dashboard) {
+    dashboard.style.display = "block"; // إظهار لوحة التحكم برمجياً بشكل مباشر
     dashboard.classList.add("active");
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "auto";
+    
+    // إخفاء أقسام المتجر الرئيسية لتحويل الشاشة للوحة التحكم بالكامل
+    document.querySelectorAll('header.site-header, section.top-banners-section, section.royal-badges-section, main.catalog-section, footer.site-footer').forEach(el => {
+      el.style.display = 'none';
+    });
+
     await updateAdminStats();
     await renderAdminProductsTable();
     renderAdminBannersTable();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
@@ -691,12 +692,25 @@ function initImageUploader(inputId, dropZoneId, previewContainerId, previewImgId
 
 // إعداد أحداث الإدارة
 function initAdminEvents() {
+  // ربط زر قفل الإدارة الرئيسي في الهيدر لضمان الاستجابة المباشرة وسلاسة الفتح
+  const openAdminBtn = document.getElementById("openAdminBtn");
+  if (openAdminBtn) {
+    openAdminBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      if (isAdminLoggedIn()) {
+        openAdminDashboard();
+      } else {
+        openAdminLoginModal();
+      }
+    });
+  }
+
   const loginForm = document.getElementById("adminLoginForm");
   const errorBox = document.getElementById("adminLoginError");
 
   if (loginForm) {
     loginForm.addEventListener("submit", function(e) {
-      e.preventDefault();
+      e.preventDefault(); // منع إعادة تحميل الصفحة
       const email = document.getElementById("adminEmail").value;
       const pass = document.getElementById("adminPassword").value;
 
@@ -704,7 +718,7 @@ function initAdminEvents() {
       if (res.success) {
         closeAdminLoginModal();
         loginForm.reset();
-        openAdminDashboard();
+        openAdminDashboard(); // فتح لوحة التحكم بدلاً من إعادة تحميل الصفحة
         showToast("مرحباً بك في لوحة إدارة عطورات اترند السحابية", "success");
       } else {
         if (errorBox) {
