@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عطورات اترند | ATRAND PERFUMES - المتجر الفاخر للعطور</title>
+  <meta name="description" content="متجر عطورات اترند - تشكيلة حصرية من أرقى وأفخم العطور الشرقية والفرنسية والنيش بأسعار استثنائية مع طلب فوري عبر الواتساب." />
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="assets/images/logo-icon.png" />
+<!-- 1. مكتبة سابابيس السحابية أولاً -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2. ملفات البرمجة الخاصة بك ثانياً -->
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+</head>
+<body>
+
+  <!-- Header & Navigation (شريط التنقل الملكي) -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-inner">
+        
+        <!-- يمين: شعار المتجر الملكي -->
+        <a class="brand" href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;">
+          <img src="assets/images/logo.png" alt="TREND parfum - عطورات اترند" class="brand-logo-img" />
+          <div class="brand-info">
+            <span class="brand-name gold-text">عطورات اترند</span>
+            <span class="brand-tagline">TREND PARFUM</span>
+          </div>
+        </a>
+
+        <!-- المنتصف: روابط الأقسام -->
+        <ul class="nav-center-menu">
+          <li><a class="nav-link active" onclick="filterCategoryFromNav('all', this)">الرئيسية</a></li>
+          <li><a class="nav-link" onclick="filterCategoryFromNav('عطور رجالية', this)">العطور الرجالية</a></li>
+          <li><a class="nav-link" onclick="filterCategoryFromNav('عطور نسائية', this)">العطور النسائية</a></li>
+          <li><a class="nav-link" onclick="filterCategoryFromNav('عطور النيش', this)">عطور النيش</a></li>
+          <li><a class="nav-link" onclick="filterCategoryFromNav('المجموعات والهدايا', this)">المجموعات والهدايا</a></li>
+        </ul>
+
+        <!-- يسار: أيقونة البحث الذكي، وأيقونة سلة التسوق (مع عداد المنتجات بتصميم قطرة ذهبية نابضة) -->
+        <div class="header-actions">
+          
+          <!-- أيقونة البحث الذكي -->
+          <button class="icon-trigger-btn" id="btnToggleSearch" title="البحث الذكي في العطور">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+
+          <!-- أيقونة سلة التسوق (مع عداد المنتجات بتصميم قطرة ذهبية نابضة) -->
+          <button class="cart-droplet-btn" id="headerCartBtn" title="سلة التسوق الملكية">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <span>السلة</span>
+            <div class="cart-golden-droplet pulsing" id="cartCountBadge" style="display: none;">
+              <span id="cartCountValue">0</span>
+            </div>
+          </button>
+
+          <!-- دخول الإدارة المحمي -->
+          <button class="icon-trigger-btn btn-open-admin" title="لوحة إدارة المتجر">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- شريط البحث الذكي المنبثق -->
+    <div class="search-popup-bar" id="searchPopupBar">
+      <div class="search-popup-inner">
+        <input type="text" id="headerSearchInput" class="form-input" placeholder="ابحث بالاسم، أو النوتات (عود، عنبر، لافندر...)، أو التصنيف..." />
+        <button class="btn-gold" style="padding: 10px 20px;" onclick="document.getElementById('catalogSection').scrollIntoView({behavior:'smooth'})">بحث</button>
+        <button class="icon-trigger-btn" id="btnCloseSearchPopup">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ثانياً: شريط إعلانات العروض المتحركة العلوي (Banners Slider مع خلفية ضبابية وعرض الصورة بالكامل) -->
+  <section class="top-banners-section" id="topBannersSliderSection" style="display: none;">
+    <div class="container">
+      <div class="banners-carousel-stage" id="bannersCarouselStage">
+        <div class="banners-slider-track" id="bannersSliderTrack">
+          <!-- تتولد البنرات العرضية ديناميكياً من اللوحة -->
+        </div>
+        <!-- نقاط التبديل السفلية -->
+        <div class="banners-dots-container" id="bannersDotsContainer"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ثالثاً: قسم مميزات المتجر (Royal Trust Badges - Glassmorphism Cards) -->
+  <section class="royal-badges-section" style="margin-top: 30px;">
+    <div class="container">
+      <div class="badges-grid">
+        
+        <!-- 1. أصالة مضمونة 100% -->
+        <div class="badge-card">
+          <div class="badge-icon-box">
+            <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <h4>أصالة مضمونة 100%</h4>
+            <p>زجاجات أصلية ومستخلصة من أجود الزيوت العطرية النقية والمختارة بعناية.</p>
+          </div>
+        </div>
+
+        <!-- 2. ثبات وفوحان طويل -->
+        <div class="badge-card">
+          <div class="badge-icon-box">
+            <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M12 12a3 3 0 0 0 3-3"/>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <h4>ثبات وفوحان طويل</h4>
+            <p>عطور مركبة بعناية فائقة وتراكيز عالية لتصمد وتفوح طوال اليوم.</p>
+          </div>
+        </div>
+
+        <!-- 3. توصيل سريع وآمن -->
+        <div class="badge-card">
+          <div class="badge-icon-box">
+            <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <h4>توصيل سريع وآمن</h4>
+            <p>تغليف فاخر ومحكم يحمي زجاجات الكريستال مع شحن سريع لباب بيتك.</p>
+          </div>
+        </div>
+
+       <!-- 4. استشارة عطرية مجانية (رابط تفاعلي للواتساب) -->
+        <a href="https://wa.me/966568009474?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A3%D9%86%20%D8%A3%D8%B3%D8%AA%D8%B4%D9%8A%D8%B1%D9%83%20%D8%B9%D9%86%20%D8%A7%D9%84%D8%B9%D8%B7%D8%B1" target="_blank" class="badge-card" style="text-decoration: none; cursor: pointer; color: var(--text-primary);">
+          <div class="badge-icon-box" style="color: #3fe27d; border-color: rgba(37,211,102,0.3);">
+            <svg width="26" height="26" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/>
+            </svg>
+          </div>
+          <div class="badge-info">
+            <h4 style="color: var(--text-primary);">استشارة عطرية مجانية</h4>
+            <p style="color: var(--text-secondary);">خبراء العطور في خدمتك ومساعدتك لاختيار العطر الملائم لشخصيتك ومناسبتك.</p>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Store Catalog Section -->
+  <main class="catalog-section" id="catalogSection">
+    <div class="container">
+      
+      <div class="catalog-header">
+        <div class="catalog-top-row">
+          <div class="section-title-group">
+            <h2>تشكيلة العطور الفاخرة <span id="productsCountDisplay" style="font-size: 1rem; color: var(--gold-light); font-weight: 500;"></span></h2>
+            <p>اختر العطر الذي يناسب ذوقك وتألق به في مناسباتك</p>
+          </div>
+
+          <div class="catalog-sort">
+            <label for="catalogSortSelect">ترتيب حسب:</label>
+            <select id="catalogSortSelect" class="sort-select">
+              <option value="newest">الأحدث وصولاً</option>
+              <option value="price-low">السعر: من الأقل للأعلى</option>
+              <option value="price-high">السعر: من الأعلى للأقل</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="category-filter-bar">
+          <button class="filter-pill active" data-category="all">كافة العطور</button>
+          <button class="filter-pill" data-category="عطور رجالية">عطور رجالية</button>
+          <button class="filter-pill" data-category="عطور نسائية">عطور نسائية</button>
+          <button class="filter-pill" data-category="عطور للجنسين">عطور للجنسين</button>
+          <button class="filter-pill" data-category="عطور شرقية وعود">عطور شرقية وعود</button>
+          <button class="filter-pill" data-category="offers">عروض وخصومات خاصة 🔥</button>
+        </div>
+      </div>
+
+      <div class="products-grid" id="productsGridContainer">
+        <!-- يتم تحميل العطور برمجياً -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Product Detail Modal -->
+  <div class="modal-overlay" id="productDetailModal">
+    <div class="modal-container product-modal-container">
+      <button class="modal-close-btn" id="closeProductModalBtn" title="إغلاق">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+
+      <div class="product-detail-layout">
+        <div class="modal-product-img">
+          <img src="" id="modalProductImg" alt="صورة العطر" />
+        </div>
+
+        <div class="modal-product-info">
+          <div class="modal-badges" id="modalProductBadges"></div>
+          <h2 class="modal-title" id="modalProductTitle"></h2>
+          
+          <div class="modal-meta">
+            <span id="modalProductCategory" class="gold-text"></span>
+            <span>•</span>
+            <span id="modalProductSize"></span>
+            <span>•</span>
+            <span id="modalProductType"></span>
+          </div>
+
+          <div class="modal-offer-alert" id="modalOfferAlert" style="display: none;"></div>
+
+          <div class="modal-price-box">
+            <div class="modal-current-price" id="modalProductCurrentPrice"></div>
+            <div class="modal-old-price" id="modalProductOldPrice" style="display: none;"></div>
+          </div>
+
+          <!-- الهرم العطري المنسق والمفصل -->
+          <div class="fragrance-pyramid" id="fragrancePyramidBox">
+            <div class="pyramid-title" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>الهرم العطري والنفحات الملكية:</span>
+              <span style="font-size: 0.78rem; color: var(--gold-light); font-weight: 700;">ثبات ملكي عالي ✨</span>
+            </div>
+            <div class="pyramid-item">
+              <span class="pyramid-label">🌟 قمة العطر (الافتتاحية):</span>
+              <span class="pyramid-val" id="pyramidTopNotes"></span>
+            </div>
+            <div class="pyramid-item">
+              <span class="pyramid-label">🌹 قلب العطر:</span>
+              <span class="pyramid-val" id="pyramidHeartNotes"></span>
+            </div>
+            <div class="pyramid-item">
+              <span class="pyramid-label">🪵 قاعدة العطر:</span>
+              <span class="pyramid-val" id="pyramidBaseNotes"></span>
+            </div>
+          </div>
+
+          <!-- مؤشرات الأداء الملكية -->
+          <div class="performance-meters-box" style="margin-bottom: 16px;">
+            <div class="meters-title" style="font-size:0.85rem; color:var(--gold-light); margin-bottom:6px;">مؤشرات الأداء والتلائم:</div>
+            <div style="font-size:0.85rem; color:var(--text-secondary);">
+              <div>• درجة الثبات: <strong id="valLongevity" style="color:var(--gold-primary);">98%</strong> | قوة الفوحان: <strong id="valSillage" style="color:var(--gold-primary);">95%</strong></div>
+              <div style="margin-top:4px;">• المناسبة: <span id="valOccasion" style="color:var(--text-primary);">سهرات ومناسبات خاصة</span></div>
+            </div>
+          </div>
+
+          <div class="modal-desc" id="modalProductDesc"></div>
+
+          <div class="modal-actions" style="flex-wrap: wrap; gap: 10px;">
+            <div class="qty-stepper">
+              <button class="qty-btn" id="btnModalQtyDec">-</button>
+              <span class="qty-display" id="modalProductQty">1</span>
+              <button class="qty-btn" id="btnModalQtyInc">+</button>
+            </div>
+            <button class="btn-gold modal-add-to-cart-btn" id="btnModalAddToCart">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              <span>إضافة إلى السلة</span>
+            </button>
+            <button class="btn-modal-consult" id="btnModalConsultWhatsapp" title="استشر الخبير عن هذا العطر">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/></svg>
+              <span>استشر الخبير عن هذا العطر 💬</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shopping Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay">
+    <div class="cart-drawer">
+      <div class="cart-drawer-header">
+        <h3>
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span>سلة التسوق الملكية</span>
+        </h3>
+        <button class="cart-drawer-close" id="closeCartDrawerBtn" title="إغلاق السلة">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="cart-items-list" id="cartItemsList"></div>
+
+      <div class="cart-drawer-footer">
+        <div class="cart-notes-drawer-box">
+          <label for="cartDrawerSpecialNotes">ملاحظات وطلبات خاصة (تغليف هدية، كرت إهداء...):</label>
+          <textarea id="cartDrawerSpecialNotes" placeholder="مثال: أرجو تغليف العطور كهدية مجانية..."></textarea>
+        </div>
+
+        <div class="cart-summary-row" style="margin-top: 12px;">
+          <span>المجموع الأولي:</span>
+          <span id="cartSubtotal">0 ر.س</span>
+        </div>
+        <div class="cart-summary-row" style="color: #4ade80;">
+          <span>إجمالي الخصم الموفر:</span>
+          <span id="cartDiscountTotal">0 ر.س</span>
+        </div>
+        <div class="cart-summary-row total-row">
+          <span>المبلغ الإجمالي المطلوب:</span>
+          <span class="cart-total-price" id="cartGrandTotal">0 ر.س</span>
+        </div>
+
+        <button class="btn-checkout-whatsapp" id="btnProceedCheckout">
+          <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/>
+          </svg>
+          <span>إتمام الطلب عبر الواتساب 📲</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div class="modal-overlay" id="adminLoginModal">
+    <div class="modal-container">
+      <button class="modal-close-btn" id="closeAdminLoginBtn" title="إغلاق">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+
+      <div class="admin-modal-content">
+        <div class="admin-lock-icon">
+          <svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        
+        <h3>تسجيل الدخول إلى إدارة المتجر</h3>
+        <p>هذه الواجهة مخصصة حصرياً لمدير منصة عطورات اترند</p>
+        <div class="admin-error-msg" id="adminLoginError"></div>
+
+        <form id="adminLoginForm">
+          <div class="form-group" style="text-align: right;">
+            <label for="adminEmail">البريد الإلكتروني</label>
+            <input type="email" id="adminEmail" class="form-input" required dir="ltr" autocomplete="email" />
+          </div>
+          <div class="form-group" style="text-align: right;">
+            <label for="adminPassword">كلمة المرور</label>
+            <input type="password" id="adminPassword" class="form-input" required dir="ltr" autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn-gold" style="width: 100%; justify-content: center; margin-top: 10px;">
+            <span>دخول إلى لوحة التحكم</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard View -->
+  <div class="admin-dashboard-view" id="adminDashboardView">
+    <header class="admin-nav">
+      <div class="container">
+        <div class="admin-nav-inner">
+          <div class="brand">
+            <img src="assets/images/logo.png" alt="TREND parfum" class="brand-logo-img" style="height: 44px;" />
+            <div class="brand-info">
+              <span class="brand-name gold-text">لوحة إدارة المتجر</span>
+              <span class="brand-tagline">TREND PARFUM CONTROL</span>
+            </div>
+          </div>
+
+          <div class="admin-user-tag">
+            <span class="status-dot"></span>
+            <span>الحساب: <strong style="color:var(--gold-light);">مدير المتجر</strong></span>
+          </div>
+
+          <div class="admin-nav-buttons">
+            <button class="action-btn" id="btnAdminBackToStore" style="background: #ffffff; border-color: var(--gold-border); color: var(--text-primary);">
+              <span>الواجهة الرئيسية للمتجر</span>
+            </button>
+            <button class="action-btn" id="btnAdminLogout" style="background: rgba(224, 71, 71, 0.08); border-color: rgba(224, 71, 71, 0.3); color: var(--accent-red);">
+              <span>تسجيل الخروج</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+      
+      <div class="admin-stats-row">
+        <div class="stat-card">
+          <div class="stat-info">
+            <h4>إجمالي العطور في المتجر</h4>
+            <div class="stat-number" id="statTotalPerfumes">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h4>عطورات عليها خصم</h4>
+            <div class="stat-number" id="statDiscountedPerfumes">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h4>العروض الإعلانية النشطة</h4>
+            <div class="stat-number" id="statSpecialOffers">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="admin-tabs-nav">
+        <button class="admin-tab-btn active" data-tab="adminTabAddSection"><span>إضافة عطر جديد</span></button>
+        <button class="admin-tab-btn" data-tab="adminTabListSection"><span>قائمة العطور</span></button>
+        <button class="admin-tab-btn" data-tab="adminTabBannersSection"><span>إدارة العروض المتحركة 📢</span></button>
+        <button class="admin-tab-btn" data-tab="adminTabDataSection"><span>النسخ الاحتياطي (JSON)</span></button>
+      </div>
+
+      <!-- Tab 1: إضافة عطر (مع كافة الحقول المطلوبة بدقة) -->
+      <div class="admin-tab-pane active" id="adminTabAddSection">
+        <div class="admin-form-card" id="adminAddEditSection">
+          <h3 style="font-size: 1.35rem; margin-bottom: 20px; color: var(--gold-light);">إضافة عطر جديد إلى المتجر</h3>
+          <form id="addPerfumeForm">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="perfumeName">اسم العطر <span style="color:var(--accent-red)">*</span></label>
+                <input type="text" id="perfumeName" class="form-input" placeholder="مثال: عطر رويال عود الملكي" required />
+              </div>
+              <div class="form-group">
+                <label for="perfumeCategory">التصنيف <span style="color:var(--accent-red)">*</span></label>
+                <select id="perfumeCategory" class="form-select" required>
+                  <option value="عطور رجالية">عطور رجالية</option>
+                  <option value="عطور نسائية">عطور نسائية</option>
+                  <option value="عطور رجالية">عطور للجنسين</option>
+                  <option value="عطور النيش">عطور النيش</option>
+                  <option value="المجموعات والهدايا">المجموعات والهدايا</option>
+                  <option value="عطور شرقية وعود">عطور شرقية وعود</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="perfumePrice">السعر الأساسي (ر.س) <span style="color:var(--accent-red)">*</span></label>
+                <input type="number" id="perfumePrice" class="form-input" placeholder="320" step="any" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="perfumeDiscount">نسبة الخصم %</label>
+                <input type="number" id="perfumeDiscount" class="form-input" placeholder="20" min="0" max="99" />
+              </div>
+              <div class="form-group">
+                <label for="perfumeSize">حجم العبوة</label>
+                <input type="text" id="perfumeSize" class="form-input" value="100 مل" />
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="perfumeType">نوع / تركيز العطر</label>
+                <input type="text" id="perfumeType" class="form-input" placeholder="مثال: EDP أو Extrait de Parfum" value="EDP" />
+              </div>
+              <div class="form-group">
+                <label for="perfumeOffer">نص العرض الترويجي (إن وجد)</label>
+                <input type="text" id="perfumeOffer" class="form-input" placeholder="مثال: خصم خاص لفترة محدودة" />
+              </div>
+            </div>
+
+            <!-- حقول الهرم العطري التفصيلية -->
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="perfumeTopNotes">🌟 قمة العطر (الافتتاحية)</label>
+                <input type="text" id="perfumeTopNotes" class="form-input" placeholder="مثال: برغموت، هيل، زعفران" />
+              </div>
+              <div class="form-group">
+                <label for="perfumeHeartNotes">🌹 قلب العطر</label>
+                <input type="text" id="perfumeHeartNotes" class="form-input" placeholder="مثال: ورد طائفي، ياسمين" />
+              </div>
+              <div class="form-group">
+                <label for="perfumeBaseNotes">🪵 قاعدة العطر</label>
+                <input type="text" id="perfumeBaseNotes" class="form-input" placeholder="مثال: عود معتق، عنبر، مسك" />
+              </div>
+            </div>
+
+            <!-- مؤشرات الأداء الملكية والمناسبة -->
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="perfumeLongevity">مؤشر الثبات %</label>
+                <input type="number" id="perfumeLongevity" class="form-input" value="98" min="50" max="100" />
+              </div>
+              <div class="form-group">
+                <label for="perfumeSillage">مؤشر الفوحان %</label>
+                <input type="number" id="perfumeSillage" class="form-input" value="95" min="50" max="100" />
+              </div>
+              <div class="form-group">
+                <label for="perfumeOccasion">المناسبة المفضلة</label>
+                <input type="text" id="perfumeOccasion" class="form-input" value="سهرات، مناسبات خاصة، استخدام يومي" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="perfumeDescription">وصف العطر وسحره</label>
+              <textarea id="perfumeDescription" class="form-textarea" placeholder="اكتب نبذة تسويقية تصف جمال وثبات وفوحان العطر..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>صورة العطر</label>
+              <div class="image-upload-zone" id="imageDropZone">
+                <input type="file" id="perfumeImageInput" accept="image/*" />
+                <div style="font-weight: 700; color: var(--gold-light);">اسحب الصورة هنا أو انقر للاختيار</div>
+                <div class="upload-preview-container" id="imagePreviewContainer">
+                  <img id="imagePreviewImg" src="" alt="معاينة" />
+                  <button type="button" class="remove-img-btn" id="removeImageBtn">×</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <button type="submit" class="btn-gold" id="submitProductBtn"><span>حفظ وإضافة إلى المتجر</span></button>
+              <button type="button" class="action-btn" id="cancelEditBtn" style="display: none;">إلغاء التعديل</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tab 2: قائمة العطور -->
+      <div class="admin-tab-pane" id="adminTabListSection">
+        <div class="admin-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>الصورة</th>
+                <th>اسم العطر والحجم</th>
+                <th>التصنيف</th>
+                <th>السعر الأساسي</th>
+                <th>الخصم</th>
+                <th>العرض</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="adminProductsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: إدارة العروض المتحركة (Banners) -->
+      <div class="admin-tab-pane" id="adminTabBannersSection">
+        <div class="admin-form-card" id="adminBannersAddSection">
+          <h3 style="font-size: 1.35rem; margin-bottom: 20px; color: var(--gold-light);">إضافة عرض إعلاني متحرك جديد (شريط البنرات العلوي)</h3>
+          <form id="addBannerForm">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="bannerTitle">عنوان العرض الرئيسي <span style="color:var(--accent-red)">*</span></label>
+                <input type="text" id="bannerTitle" class="form-input" placeholder="مثال: خصم اليوم الوطني 50% على عطور النيش" required />
+              </div>
+              <div class="form-group">
+                <label for="bannerSubtitle">الوصف الفرعي للعرض</label>
+                <input type="text" id="bannerSubtitle" class="form-input" placeholder="مثال: تسوق تشكيلة العطور الملكية واحصل على شحن مجاني" />
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="bannerTag">شارة البنر (Tag)</label>
+                <input type="text" id="bannerTag" class="form-input" value="عرض خاص 🔥" />
+              </div>
+              <div class="form-group">
+                <label for="bannerButtonText">نص زر الطلب</label>
+                <input type="text" id="bannerButtonText" class="form-input" value="اطلب العرض بالواتساب" />
+              </div>
+              <div class="form-group">
+                <label for="bannerWhatsappMessage">رسالة الواتساب المخصصة عند النقر</label>
+                <input type="text" id="bannerWhatsappMessage" class="form-input" placeholder="السلام عليكم، أود الاستفسار عن عرض..." />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>صورة العرض الإعلاني (يتم عرضها بالكامل بوضوح وبخلفية ضبابية)</label>
+              <div class="image-upload-zone" id="bannerImageDropZone">
+                <input type="file" id="bannerImageInput" accept="image/*" />
+                <div style="font-weight: 700; color: var(--gold-light);">اسحب صورة العرض هنا أو انقر للاختيار</div>
+                <div class="upload-preview-container" id="bannerImagePreviewContainer">
+                  <img id="bannerImagePreviewImg" src="" alt="معاينة البنر" />
+                  <button type="button" class="remove-img-btn" id="removeBannerImageBtn">×</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <button type="submit" class="btn-gold" id="submitBannerBtn"><span>حفظ وإضافة العرض الإعلاني</span></button>
+              <button type="button" class="action-btn" id="cancelBannerEditBtn" style="display: none;">إلغاء التعديل</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="admin-table-wrapper" style="margin-top: 30px;">
+          <h4 style="padding: 16px 20px; color: var(--gold-light);">العروض الإعلانية النشطة حالياً</h4>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>الصورة</th>
+                <th>العنوان والوصف</th>
+                <th>الشارة</th>
+                <th>زر الواتساب</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="adminBannersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 4: النسخ الاحتياطي -->
+      <div class="admin-tab-pane" id="adminTabDataSection">
+        <div class="data-tools-card">
+          <h3 style="font-size: 1.35rem; margin-bottom: 8px; color: var(--gold-light);">تصدير واستيراد بيانات المتجر</h3>
+          <div class="data-tools-grid">
+            <div class="tool-box">
+              <h4>تصدير ملف products.json</h4>
+              <button class="btn-gold" id="btnExportJson">تصدير وتنزيل</button>
+            </div>
+            <div class="tool-box">
+              <h4>إعادة ضبط قاعدة البيانات</h4>
+              <button class="action-btn" id="btnClearDatabase" style="background: rgba(224,71,71,0.15); color: #ff8888;">مسح كافة البيانات</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>جميع الحقوق محفوظة &copy; 2026 <strong>عطورات اترند</strong> (ATRAND PERFUMES)</div>
+        <div style="font-size: 0.95rem; color: var(--gold-light); font-weight: 700;">"صُنع بحب لأصحاب الذوق الرفيع ✨"</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Scripts -->
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
